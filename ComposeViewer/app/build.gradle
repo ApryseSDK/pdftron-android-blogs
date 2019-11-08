@@ -57,12 +57,12 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // PDFTron Dependencies
-    implementation "com.pdftron:pdftron:7.0.3"
-    implementation "com.pdftron:tools:7.0.3"
+    implementation "com.pdftron:pdftron:$myPdftronVersion"
+    implementation "com.pdftron:tools:$myPdftronVersion"
 
     implementation 'androidx.multidex:multidex:2.0.1'
 
     // ***** Optionally include the demo library ****
-    implementation "com.pdftron:demo:7.0.3"
+    implementation "com.pdftron:demo:$myPdftronVersion"
     // **********************************************
 }
