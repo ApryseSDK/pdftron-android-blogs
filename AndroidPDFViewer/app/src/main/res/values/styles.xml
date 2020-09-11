@@ -8,7 +8,7 @@
         <item name="colorAccent">@color/app_color_accent</item>
     </style>
 
-    <style name="CustomAppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="CustomAppTheme" parent="CustomAppThemeBase">
         <item name="colorPrimary">@color/app_color_primary_day</item>
         <item name="colorPrimaryDark">@color/app_color_primary_dark_day</item>
         <item name="colorAccent">@color/app_color_accent</item>
@@ -16,5 +16,4 @@
         <item name="actionModeBackground">?attr/colorPrimary</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
-
 </resources>
