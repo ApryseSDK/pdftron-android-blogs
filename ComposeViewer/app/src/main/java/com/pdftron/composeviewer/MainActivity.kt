@@ -1,104 +1,115 @@
 package com.pdftron.composeviewer
 
+import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.Composable
-import androidx.compose.Context
-import androidx.compose.ambient
-import androidx.compose.unaryPlus
-import androidx.ui.core.ContextAmbient
-import androidx.ui.core.Text
-import androidx.ui.core.dp
-import androidx.ui.core.setContent
-import androidx.ui.foundation.Clickable
-import androidx.ui.foundation.SimpleImage
-import androidx.ui.foundation.shape.corner.RoundedCornerShape
-import androidx.ui.graphics.imageFromResource
-import androidx.ui.layout.*
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.ripple.Ripple
-import androidx.ui.material.surface.Card
-import androidx.ui.material.themeTextStyle
-import com.pdftron.composeviewer.data.BookshelfState
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.pdftron.composeviewer.ui.theme.ComposeViewerTheme
 import com.pdftron.pdf.config.ViewerConfig
 import com.pdftron.pdf.controls.DocumentActivity
 import com.pdftron.pdf.utils.Utils
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val documentsState = BookshelfState();
         setContent {
-            MaterialTheme {
-                Bookshelf(documentsState)
+            ComposeViewerTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(color = MaterialTheme.colors.background) {
+                    Column {
+                        TopAppBar(title = { Text(text = "Compose Viewer") })
+                        Bookshelf()
+                    }
+                }
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Bookshelf(bookshelfState: BookshelfState) {
-    val columns = 3
-    Table(
-        columns = columns
+fun Bookshelf() {
+    val documents =
+        listOf(
+            "contract.pdf",
+            "sample.pdf",
+            "blueprint.pdf",
+            "drawing.pdf",
+            "floorplan.pdf",
+            "formula.pdf",
+            "invoice.pdf",
+            "music.pdf",
+            "news.pdf"
+        )
+
+
+    LazyVerticalGrid(
+        cells = GridCells.Adaptive(minSize = 128.dp)
     ) {
-        val groupedDocs = bookshelfState.documents.chunked(columns)
-        groupedDocs.forEach {
-            this.tableRow {
-                it.forEach {
-                    ClickableBookshelfItem(it)
-                }
-            }
+        items(documents) {
+            BookshelfItem(it)
         }
     }
 }
 
 @Composable
-fun BookshelfItem(docName: String) {
-    val context = +ambient(ContextAmbient)
-    val thumbnail = imageFromResource(
-        context.resources,
-        getThumbnailResourceFromString(context, docName)!!
-    )
-    Padding(4.dp) {
-        Card(shape = RoundedCornerShape(4.dp), elevation = 2.dp) {
-            Column(
-                crossAxisAlignment = CrossAxisAlignment.Center,
-                crossAxisSize = LayoutSize.Wrap
-            ) {
-                SimpleImage(thumbnail)
-                Padding(8.dp) {
-                    Text(
-                        text = docName,
-                        style = (+themeTextStyle { subtitle1 })
-                    )
-                }
-            }
-        }
-    }
-}
+fun BookshelfItem(document: String) {
 
-@Composable
-fun ClickableBookshelfItem(docName: String) {
-    val context = +ambient(ContextAmbient)
+    val context = LocalContext.current
+    val painter: Painter = painterResource(id = getThumbnailResourceFromString(context, document))
     val config = ViewerConfig.Builder()
         .multiTabEnabled(false)
         .build();
 
-    // Wrap bookshelf item with a clickable composable
-    // that will launch the viewer
-    Ripple(bounded = true) {
-        Clickable(onClick = {
-            // Launch the viewer for the clicked thumbnail
-            DocumentActivity.openDocument(
-                context,
-                getResourceFromString(context, docName),
-                config
-            );
-        }) {
-            BookshelfItem(docName)
+    val docRes = getResourceFromString(context, document)
+
+    Card(
+        modifier = Modifier
+            .border(1.dp, Color.Transparent)
+            .padding(8.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .clickable {
+                    DocumentActivity.openDocument(
+                        context,
+                        docRes,
+                        config
+                    )
+                }
+        ) {
+            Image(
+                painter = painter,
+                contentDescription = "",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(4.dp)
+            )
+            Text(text = document)
         }
+
     }
 }
 
@@ -110,5 +121,9 @@ fun getResourceFromString(context: Context, resString: String?): Int {
 }
 
 fun getThumbnailResourceFromString(context: Context, resString: String?): Int {
-    return getResourceFromString(context, "thumb_$resString")
+    val suffix = resString!!.substringBeforeLast('.', "")
+    return Utils.getResourceDrawable(
+        context,
+        "thumb_$suffix"
+    )
 }
